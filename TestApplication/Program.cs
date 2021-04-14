@@ -7,7 +7,7 @@ namespace TestApplication
     {
         private static void Main(string[] args)
         {
-            var result = BaseType.ReadChar();
+            var result = BaseType.ReadInt32<Exception>(input => Console.WriteLine($"Error because {input} is not a number."), "Number: ");
             Console.WriteLine(result);
         }
     }

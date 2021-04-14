@@ -46,14 +46,19 @@ namespace MoreNET.Utils
                 new ReadMethodInfo(typeof(string), false, false),
             };
 
-            foreach (var item in info)
+            for (int i = 0; i < info.Length; i++)
             {
-                classBuilder.AppendLine(GenerateTypeReadWithoutErrorHandler(item.name, item.useParse, item.oneChar));
-                classBuilder.AppendLine();
+                classBuilder.AppendLine(GenerateTypeReadWithoutErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
+                classBuilder.AppendLine(GenerateTypeReadWithParameterlessActionErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
+                classBuilder.AppendLine(GenerateTypeReadWithActionErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
+                classBuilder.AppendLine(GenerateTypeReadWithParameterlessFuncErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
+                if (i < info.Length - 1)
+                    classBuilder.AppendLine(GenerateTypeReadWithFuncErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
+                else
+                    classBuilder.Append(GenerateTypeReadWithFuncErrorHandler(info[i].name, info[i].useParse, info[i].oneChar));
             }
 
-            classBuilder.Append(@"
-    }
+            classBuilder.Append(@"    }
 }");
 
             context.AddSource("baseTypeGenerator", SourceText.From(classBuilder.ToString(), Encoding.UTF8));
@@ -66,13 +71,118 @@ namespace MoreNET.Utils
         private string GenerateTypeReadWithoutErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
             StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}(string prompt = \"\")", 2));
+            method.AppendLine();
             method.AppendLine(Helpers.Indent("{", 2));
             method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
             string readMethod = oneChar ? "Console.ReadKey(true).KeyChar" : "Console.ReadLine()";
             if (useParse)
                 method.AppendLine(Helpers.Indent($"return {type.Name}.Parse({readMethod});", 3));
             else
-                method.AppendLine(Helpers.Indent($"    return {readMethod};", 3));
+                method.AppendLine(Helpers.Indent($"return {readMethod};", 3));
+            method.AppendLine(Helpers.Indent("}", 2));
+            return method.ToString();
+        }
+
+        private string GenerateTypeReadWithParameterlessActionErrorHandler(Type type, bool useParse = true, bool oneChar = true)
+        {
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action handler, string prompt = \"\")", 2));
+            method.AppendLine();
+            method.AppendLine(Helpers.Indent("where TException : Exception", 3));
+            method.AppendLine(Helpers.Indent("{", 2));
+            method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
+            string readMethod = oneChar ? "Console.ReadKey(true).KeyChar" : "Console.ReadLine()";
+            if (useParse)
+            {
+                method.AppendLine(Helpers.Indent("try", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent($"return {type.Name}.Parse({readMethod});", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+                method.AppendLine(Helpers.Indent("catch (TException)", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent("handler();", 4));
+                method.AppendLine(Helpers.Indent("return default;", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+            }
+            else
+                method.AppendLine(Helpers.Indent($"return {readMethod};", 3));
+            method.AppendLine(Helpers.Indent("}", 2));
+            return method.ToString();
+        }
+
+        private string GenerateTypeReadWithActionErrorHandler(Type type, bool useParse = true, bool oneChar = true)
+        {
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action<string> handler, string prompt = \"\")", 2));
+            method.AppendLine();
+            method.AppendLine(Helpers.Indent("where TException : Exception", 3));
+            method.AppendLine(Helpers.Indent("{", 2));
+            method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
+            string readMethod = oneChar ? "Console.ReadKey(true).KeyChar" : "Console.ReadLine()";
+            method.AppendLine(Helpers.Indent($"var input = {readMethod};", 3));
+            if (useParse)
+            {
+                method.AppendLine(Helpers.Indent("try", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent($"return {type.Name}.Parse(input);", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+                method.AppendLine(Helpers.Indent("catch (TException)", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent("handler(input);", 4));
+                method.AppendLine(Helpers.Indent("return default;", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+            }
+            else
+                method.AppendLine(Helpers.Indent($"return {readMethod};", 3));
+            method.AppendLine(Helpers.Indent("}", 2));
+            return method.ToString();
+        }
+
+        private string GenerateTypeReadWithParameterlessFuncErrorHandler(Type type, bool useParse = true, bool oneChar = true)
+        {
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<{type.Name}> handler, string prompt = \"\")", 2));
+            method.AppendLine();
+            method.AppendLine(Helpers.Indent("where TException : Exception", 3));
+            method.AppendLine(Helpers.Indent("{", 2));
+            method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
+            string readMethod = oneChar ? "Console.ReadKey(true).KeyChar" : "Console.ReadLine()";
+            if (useParse)
+            {
+                method.AppendLine(Helpers.Indent("try", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent($"return {type.Name}.Parse({readMethod});", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+                method.AppendLine(Helpers.Indent("catch (TException)", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent("return handler();", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+            }
+            else
+                method.AppendLine(Helpers.Indent($"return {readMethod};", 3));
+            method.AppendLine(Helpers.Indent("}", 2));
+            return method.ToString();
+        }
+
+        private string GenerateTypeReadWithFuncErrorHandler(Type type, bool useParse = true, bool oneChar = true)
+        {
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<string, {type.Name}> handler, string prompt = \"\")", 2));
+            method.AppendLine();
+            method.AppendLine(Helpers.Indent("where TException : Exception", 3));
+            method.AppendLine(Helpers.Indent("{", 2));
+            method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
+            string readMethod = oneChar ? "Console.ReadKey(true).KeyChar" : "Console.ReadLine()";
+            method.AppendLine(Helpers.Indent($"var input = {readMethod};", 3));
+            if (useParse)
+            {
+                method.AppendLine(Helpers.Indent("try", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent($"return {type.Name}.Parse(input);", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+                method.AppendLine(Helpers.Indent("catch (TException)", 3));
+                method.AppendLine(Helpers.Indent("{", 3));
+                method.AppendLine(Helpers.Indent("return handler(input);", 4));
+                method.AppendLine(Helpers.Indent("}", 3));
+            }
+            else
+                method.AppendLine(Helpers.Indent($"return {readMethod};", 3));
             method.AppendLine(Helpers.Indent("}", 2));
             return method.ToString();
         }
