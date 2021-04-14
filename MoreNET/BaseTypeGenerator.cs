@@ -70,7 +70,7 @@ namespace MoreNET.Utils
 
         private string GenerateTypeReadWithoutErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
-            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}(string prompt = \"\")", 2));
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}(String prompt = \"\")", 2));
             method.AppendLine();
             method.AppendLine(Helpers.Indent("{", 2));
             method.AppendLine(Helpers.Indent("Console.Write(prompt);", 3));
@@ -85,7 +85,7 @@ namespace MoreNET.Utils
 
         private string GenerateTypeReadWithParameterlessActionErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
-            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action handler, string prompt = \"\")", 2));
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action handler, String prompt = \"\")", 2));
             method.AppendLine();
             method.AppendLine(Helpers.Indent("where TException : Exception", 3));
             method.AppendLine(Helpers.Indent("{", 2));
@@ -111,7 +111,7 @@ namespace MoreNET.Utils
 
         private string GenerateTypeReadWithActionErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
-            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action<string> handler, string prompt = \"\")", 2));
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Action<String> handler, String prompt = \"\")", 2));
             method.AppendLine();
             method.AppendLine(Helpers.Indent("where TException : Exception", 3));
             method.AppendLine(Helpers.Indent("{", 2));
@@ -138,7 +138,7 @@ namespace MoreNET.Utils
 
         private string GenerateTypeReadWithParameterlessFuncErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
-            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<{type.Name}> handler, string prompt = \"\")", 2));
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<{type.Name}> handler, String prompt = \"\")", 2));
             method.AppendLine();
             method.AppendLine(Helpers.Indent("where TException : Exception", 3));
             method.AppendLine(Helpers.Indent("{", 2));
@@ -163,7 +163,7 @@ namespace MoreNET.Utils
 
         private string GenerateTypeReadWithFuncErrorHandler(Type type, bool useParse = true, bool oneChar = true)
         {
-            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<string, {type.Name}> handler, string prompt = \"\")", 2));
+            StringBuilder method = new StringBuilder(Helpers.Indent($"public static {type.Name} Read{type.Name}<TException>(Func<String, {type.Name}> handler, String prompt = \"\")", 2));
             method.AppendLine();
             method.AppendLine(Helpers.Indent("where TException : Exception", 3));
             method.AppendLine(Helpers.Indent("{", 2));
